@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Sidebar from './components/Sidebar';
 import PosKasir from './components/PosKasir';
 import BukuUtang from './components/BukuUtang';
@@ -27,9 +27,9 @@ function App() {
   };
 
   return (
-    <div className="flex h-screen bg-slate-100 font-sans text-slate-900">
+    <div className="flex flex-col lg:flex-row h-screen bg-slate-100 font-sans text-slate-900 overflow-hidden">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-      <main className="flex-1 p-6 h-full overflow-hidden">
+      <main className="flex-1 p-3 sm:p-4 lg:p-6 h-full overflow-y-auto lg:overflow-hidden">
         {renderContent()}
       </main>
     </div>
