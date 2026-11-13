@@ -81,7 +81,13 @@ const PosKasir = () => {
   };
 
   const removeFromCart = (id) => {
-    setCart(prev => prev.filter(item => item.id !== id));
+    setCart(prev => {
+      const nextCart = prev.filter(item => item.id !== id);
+      if (nextCart.length === 0) {
+        setIsMobileCartOpen(false);
+      }
+      return nextCart;
+    });
   };
 
   const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
@@ -318,9 +324,13 @@ const PosKasir = () => {
           </div>
         </div>
 
-        {/* Grid Produk: Khusus Mobile 2 Kolom (grid-cols-2), Tablet 3 (md:grid-cols-3), Desktop 4 (lg:grid-cols-3 xl:grid-cols-4) */}
-        <div className="flex-1 overflow-y-auto p-3 sm:p-4 bg-slate-50 pb-24 lg:pb-4">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+        {/* Grid Produk: Responsif penuh saat keranjang kosong (cart.length === 0) */}
+        <div className={`flex-1 overflow-y-auto p-3 sm:p-4 bg-slate-50 ${cart.length > 0 ? 'pb-24 lg:pb-4' : 'pb-4'}`}>
+          <div className={`grid gap-3 sm:gap-4 ${
+            cart.length === 0 
+              ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6' 
+              : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4'
+          }`}>
             {filteredProducts.map(product => (
               <button
                 key={product.id}
@@ -355,55 +365,59 @@ const PosKasir = () => {
       </div>
 
       {/* =========================================================================
-          KANAN: KERANJANG VERSI DESKTOP (TETAP UTUH di layar Desktop >= lg)
+          KANAN: KERANJANG VERSI DESKTOP (Hanya tampil jika ada item di keranjang)
          ========================================================================= */}
-      <div className="hidden lg:flex w-96 flex-col bg-white rounded-xl shadow-sm border border-slate-100 h-full overflow-hidden shrink-0">
-        <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-          <h2 className="font-bold text-lg text-slate-800">Keranjang</h2>
-          <span className="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full text-xs font-bold">
-            {cart.length} Item
-          </span>
-        </div>
+      {cart.length > 0 && (
+        <div className="hidden lg:flex w-80 xl:w-96 flex-col bg-white rounded-xl shadow-sm border border-slate-100 h-full overflow-hidden shrink-0 animate-in fade-in slide-in-from-right-4 duration-200">
+          <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+            <h2 className="font-bold text-lg text-slate-800">Keranjang</h2>
+            <span className="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full text-xs font-bold">
+              {cart.length} Item
+            </span>
+          </div>
 
-        <div className="flex-1 overflow-y-auto p-4">
-          {renderCartItems()}
-        </div>
+          <div className="flex-1 overflow-y-auto p-4">
+            {renderCartItems()}
+          </div>
 
-        {renderCartFooter()}
-      </div>
+          {renderCartFooter()}
+        </div>
+      )}
 
       {/* =========================================================================
           FLOATING ACTION BUTTON (FAB) KERANJANG KHUSUS LAYAR KECIL (< lg)
          ========================================================================= */}
-      <div className="lg:hidden fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-40">
-        <button
-          onClick={() => setIsMobileCartOpen(true)}
-          className="relative flex items-center gap-3 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white px-4 sm:px-5 py-3 rounded-full shadow-2xl border-2 border-white/20 transition-all duration-200"
-          aria-label="Buka Keranjang Belanja"
-        >
-          <div className="relative">
-            <ShoppingCart size={22} className="sm:w-6 sm:h-6" />
-            {totalItemCount > 0 && (
-              <span className="absolute -top-2.5 -right-2.5 bg-red-500 text-white text-[10px] sm:text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
-                {totalItemCount > 99 ? '99+' : totalItemCount}
-              </span>
-            )}
-          </div>
-          <div className="text-left font-sans">
-            <div className="text-[10px] uppercase tracking-wider text-emerald-100 font-semibold leading-none">
-              {cart.length} Item
+      {cart.length > 0 && (
+        <div className="lg:hidden fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-40 animate-in fade-in slide-in-from-bottom-4 duration-200">
+          <button
+            onClick={() => setIsMobileCartOpen(true)}
+            className="relative flex items-center gap-3 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white px-4 sm:px-5 py-3 rounded-full shadow-2xl border-2 border-white/20 transition-all duration-200"
+            aria-label="Buka Keranjang Belanja"
+          >
+            <div className="relative">
+              <ShoppingCart size={22} className="sm:w-6 sm:h-6" />
+              {totalItemCount > 0 && (
+                <span className="absolute -top-2.5 -right-2.5 bg-red-500 text-white text-[10px] sm:text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
+                  {totalItemCount > 99 ? '99+' : totalItemCount}
+                </span>
+              )}
             </div>
-            <div className="text-xs sm:text-sm font-bold leading-tight">
-              Rp {total.toLocaleString('id-ID')}
+            <div className="text-left font-sans">
+              <div className="text-[10px] uppercase tracking-wider text-emerald-100 font-semibold leading-none">
+                {cart.length} Item
+              </div>
+              <div className="text-xs sm:text-sm font-bold leading-tight">
+                Rp {total.toLocaleString('id-ID')}
+              </div>
             </div>
-          </div>
-        </button>
-      </div>
+          </button>
+        </div>
+      )}
 
       {/* =========================================================================
           MODAL / BOTTOM SHEET KERANJANG MOBILE (< lg)
          ========================================================================= */}
-      {isMobileCartOpen && (
+      {isMobileCartOpen && cart.length > 0 && (
         <div className="fixed inset-0 z-50 lg:hidden flex flex-col justify-end sm:justify-center items-center">
           {/* Backdrop Blur Overlay */}
           <div 
